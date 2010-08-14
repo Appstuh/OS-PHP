@@ -17,6 +17,8 @@ $mysql = array(
 	'pass'	=> '', // your mysql password
 	'db'	=> ''); // your mysql database name
 
+$wwwdir = ""; // the directory where we should drop the Packages file -- INCLUDE end slash
+
 $feedname = "My webOS development feed"; // options: The name that will show up in Preware or webOS Quick Install
 
 // DO NOT EDIT BELOW UNLESS YOU KNOW WHAT YOU ARE DOING
@@ -42,6 +44,6 @@ while ($row = mysql_fetch_array($query)) {
 	$text .= "\n\n";
 }
 
-file_put_contents("./Packages", $text);
+file_put_contents($wwwdir . "Packages", $text);
 mysql_close($conn);
 ?>

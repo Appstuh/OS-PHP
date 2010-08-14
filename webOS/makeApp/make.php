@@ -18,6 +18,8 @@ $mysql = array(
 	'pass'	=> '', // your mysql password
 	'db'	=> ''); // your mysql database name
 
+$wwwdir = ""; // the directory where we should drop the ipkg file -- INCLUDE end slash
+
 $os = "windows"; // options: windows or linux
 
 // DO NOT EDIT BELOW UNLESS YOU KNOW WHAT YOU ARE DOING
@@ -56,15 +58,15 @@ $appinfo .= "}";
 
 $out = exec($rm . " " . $row['pathto'] . "/*");
 
-$out = exec($cp . " \"" . $row['path'] . "\*\" \"" . $row['pathto'] . "\\\" " . $cpswitch);
+$out = exec($cp . " \"" . $row['path'] . (($os == "windows") ? "\*" : "/*") . "\" \"" . $row['pathto'] . (($os == "windows") ? "\\" : "/") . "\" " . $cpswitch);
 
 file_put_contents($row['pathto'] . "/appinfo.json", $appinfo);
 
-$filename = $row['appid'] . "_" . $row['ver'] . "_" . $row['arch'] . ".ipk";
-exec("palm-package -o \"D:/php_work/repo\" \"" . $row['pathto'] . "/\"");
+$filename = $wwwdir . $row['appid'] . "_" . $row['ver'] . "_" . $row['arch'] . ".ipk";
+exec("palm-package -o \"" . $wwwdir . "\" \"" . $row['pathto'] . "/\"");
 echo "Created IPKG file...<br />";
 
-exec("palm-install " . $filename);
+exec("palm-install \"" . $filename . "\"");
 echo "Installed to emulator...<br />";
 
 exec("palm-launch -d tcp " . $row['appid']);
