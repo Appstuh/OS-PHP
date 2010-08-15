@@ -13,14 +13,14 @@
 // CONFIGURE BELOW:
 
 $mysql = array(
-	'host'	=> '127.0.0.1', // your database host
+	'host'	=> '', // your database host
 	'user'	=> '', // your mysql username
 	'pass'	=> '', // your mysql password
 	'db'	=> ''); // your mysql database name
 
 $wwwdir = ""; // the directory where we should drop the ipkg file -- INCLUDE end slash
 
-$os = "windows"; // options: windows or linux
+$os = ""; // options: windows or linux
 
 // DO NOT EDIT BELOW UNLESS YOU KNOW WHAT YOU ARE DOING
 
@@ -53,8 +53,36 @@ $appinfo .= '	"' . "vendor" . '": ' . '"' . $row['maintainer'] . '",' . "\n";
 $appinfo .= '	"' . "type" . '": ' . '"' . "web" . '",' . "\n";
 $appinfo .= '	"' . "main" . '": ' . '"' . "index.html" . '",' . "\n";
 $appinfo .= '	"' . "title" . '": ' . '"' . $row['title'] . '",' . "\n";
+if ((bool)$row['support'] === TRUE) {
+	$supportQ = mysql_query("SELECT * FROM opt WHERE opt='support'");
+	$suppInfo = mysql_fetch_array($supportQ);
+	$suppInfo = explode(';;;', $suppInfo['val']);
+	$appinfo .= '	"support":' . " {\n";
+	$appinfo .= '		"url": "' . $suppInfo[0] . '",' . "\n";
+	$appinfo .= '		"email": {' . "\n";
+	$appinfo .= '			"address": "' . $suppInfo[1] . '",' . "\n";
+	$appinfo .= '			"subject": "' . $suppInfo[2] . '"' . "\n";
+	$appinfo .= '		},' . "\n";
+	$appinfo .= '		"resources": [' . "\n";
+	$resourceQ = mysql_query("SELECT * FROM opt WHERE opt='supportResource'");
+	$numResource = mysql_num_rows($resourceQ);
+	$i = 0;
+	while($supportRow = mysql_fetch_array($resourceQ)) {
+		$supportRow = explode(';;;', $supportRow['val']);
+		$i++;
+		$appinfo .= "			{\n";
+		$appinfo .= '				"type": "' . $supportRow[0] . '",' . "\n";
+		$appinfo .= '				"label": "' . $supportRow[1] . '",' . "\n";
+		$appinfo .= '				"url": "' . $supportRow[2] . '",' . "\n";
+		$appinfo .= '			}' . (($i < $numResource) ? ',' : '') . "\n"; 
+	}
+	$appinfo .= "		]\n";
+	$appinfo .= "	},\n";
+}
 $appinfo .= '	"' . "icon" . '": ' . '"' . $row['icon'] . '"' . "\n";
 $appinfo .= "}";
+
+$appinfo = str_replace("#{-appName}", $row['title'], $appinfo);
 
 $out = exec($rm . " " . $row['pathto'] . "/*");
 
